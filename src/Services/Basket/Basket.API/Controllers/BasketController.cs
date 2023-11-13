@@ -21,14 +21,9 @@ public class BasketController : ControllerBase
     {
         string? jsonData = await _distributedCache.GetStringAsync(key: userName);
 
-        if (string.IsNullOrEmpty(jsonData))
-        {
-            return Ok(new ShoppingCart(userName));
-        }
-
-        ShoppingCart items = JsonSerializer.Deserialize<ShoppingCart>(jsonData)!;
-
-        return Ok(items);
+        return jsonData is null
+            ? Ok(new ShoppingCart(userName))
+            : Ok(JsonSerializer.Deserialize<ShoppingCart>(jsonData)!);
     }
 
     [HttpPost]

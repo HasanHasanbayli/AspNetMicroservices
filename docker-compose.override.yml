@@ -1,5 +1,6 @@
 version: '3.8'
 services:
+
   catalogdb:
     container_name: catalogdb
     restart: always
@@ -7,11 +8,34 @@ services:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
+
   basketdb:
     container_name: basketdb
     restart: always
     ports:
       - "6379:6379"
+
+  portainer:
+    container_name: portainer
+    restart: always
+    ports:
+      - "9000:9000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer-data:/data
+
+  discountdb:
+    container_name: discountdb
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=MyP@ssword
+      - POSTGRES_DB=Discount
+    restart: always
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data/
+
   catalog.api:
     container_name: catalog.api
     environment:
@@ -21,6 +45,7 @@ services:
       - catalogdb
     ports:
       - "5001:80"
+
   basket.api:
     container_name: basket.api
     environment:

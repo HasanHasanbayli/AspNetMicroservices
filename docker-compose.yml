@@ -1,14 +1,24 @@
 version: '3.8'
 services:
+  
   catalogdb:
     image: mongo
+  
   basketdb:
     image: redis:alpine
+  
+  portainer:
+    image: portainer/portainer-ce
+  
+  discountdb:
+    image: postgres
+  
   catalog.api:
     image: ${DOCKER_REGISTRY-}catalog_api_image
     build:
       context: .
       dockerfile: src/Services/Catalog/Catalog.API/Dockerfile
+  
   basket.api:
     image: ${DOCKER_REGISTRY-}basket_api_image
     build:
@@ -17,3 +27,5 @@ services:
 
 volumes:
   mongo-data:
+  portainer-data:
+  postgres-data:

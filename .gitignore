@@ -1,5 +1,7 @@
-.idea/
-.vs/
-.vscode/
-bin/
-obj/
+**/.vs
+**/.vscode
+**/.idea
+**/bin
+**/obj
+**/*.*proj.user
+**/.settings
