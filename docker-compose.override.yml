@@ -55,3 +55,9 @@ services:
       - basketdb
     ports:
       - "5002:80"
+  discount.api:
+    container_name: discount.api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "5003:80"
