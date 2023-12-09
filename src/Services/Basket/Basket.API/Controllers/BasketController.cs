@@ -17,9 +17,9 @@ public class BasketController : ControllerBase
     }
 
     [HttpGet(template: "{userName}")]
-    public async Task<IActionResult> Get(string userName)
+    public async Task<IActionResult> Get(string userName, CancellationToken cancellationToken)
     {
-        string? jsonData = await _distributedCache.GetStringAsync(key: userName);
+        string? jsonData = await _distributedCache.GetStringAsync(key: userName, token: cancellationToken);
 
         return jsonData is null
             ? Ok(new ShoppingCart(userName))
@@ -27,17 +27,18 @@ public class BasketController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Post([FromBody] ShoppingCart basket)
+    public async Task<IActionResult> Post([FromBody] ShoppingCart basket, CancellationToken cancellationToken)
     {
-        await _distributedCache.SetStringAsync(key: basket.Username, JsonSerializer.Serialize(basket));
+        await _distributedCache.SetStringAsync(key: basket.Username,
+            value: JsonSerializer.Serialize(basket), token: cancellationToken);
 
         return Ok();
     }
 
     [HttpDelete(template: "{userName}")]
-    public async Task<IActionResult> Delete(string userName)
+    public async Task<IActionResult> Delete(string userName, CancellationToken cancellationToken)
     {
-        await _distributedCache.RemoveAsync(key: userName);
+        await _distributedCache.RemoveAsync(key: userName, token: cancellationToken);
 
         return Ok();
     }

@@ -18,21 +18,21 @@ public class ProductController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult> GetProducts()
+    public async Task<ActionResult> GetProducts(CancellationToken cancellationToken)
     {
         IEnumerable<Product> products = await _catalogContext.Products
             .Find(filter: product => true)
-            .ToListAsync();
+            .ToListAsync(cancellationToken: cancellationToken);
 
         return Ok(products);
     }
 
     [HttpGet(template: "{id}")]
-    public async Task<ActionResult> GetProductById(string id)
+    public async Task<ActionResult> GetProductById(string id, CancellationToken cancellationToken)
     {
         Product? product = await _catalogContext.Products
             .Find(filter: product => product.Id == id)
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
         if (product is null)
         {
@@ -43,11 +43,11 @@ public class ProductController : ControllerBase
     }
 
     [HttpGet(template: "name/{productName}")]
-    public async Task<ActionResult> GetProductByName(string productName)
+    public async Task<ActionResult> GetProductByName(string productName, CancellationToken cancellationToken)
     {
         Product? product = await _catalogContext.Products
             .Find(filter: product => product.Name.ToLower().Contains(productName.ToLower()))
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
         if (product is null)
         {
@@ -58,31 +58,31 @@ public class ProductController : ControllerBase
     }
 
     [HttpGet(template: "category/{categoryName}")]
-    public async Task<ActionResult> GetProductByCategory(string categoryName)
+    public async Task<ActionResult> GetProductByCategory(string categoryName, CancellationToken cancellationToken)
     {
         IEnumerable<Product> products = await _catalogContext.Products
             .Find(filter: product => product.Category.ToLower().Contains(categoryName.ToLower()))
-            .ToListAsync();
+            .ToListAsync(cancellationToken: cancellationToken);
 
         return Ok(products);
     }
 
     [HttpPost]
-    public async Task<ActionResult> CreateProduct([FromBody] Product product)
+    public async Task<ActionResult> CreateProduct([FromBody] Product product, CancellationToken cancellationToken)
     {
         product.Id = ObjectId.GenerateNewId().ToString()!;
-        
-        await _catalogContext.Products.InsertOneAsync(document: product);
+
+        await _catalogContext.Products.InsertOneAsync(document: product, cancellationToken: cancellationToken);
 
         return Created("", product);
     }
 
     [HttpPut]
-    public async Task<ActionResult> UpdateProduct([FromBody] Product product)
+    public async Task<ActionResult> UpdateProduct([FromBody] Product product, CancellationToken cancellationToken)
     {
-        ReplaceOneResult result = await _catalogContext.Products
-            .ReplaceOneAsync(filter: existProduct => existProduct.Id == product.Id,
-                replacement: product);
+        ReplaceOneResult result = await _catalogContext.Products.ReplaceOneAsync(
+            filter: existProduct => existProduct.Id == product.Id,
+            replacement: product, cancellationToken: cancellationToken);
 
         if (result.IsAcknowledged && result.ModifiedCount > 0)
         {
@@ -93,10 +93,11 @@ public class ProductController : ControllerBase
     }
 
     [HttpDelete(template: "{id}")]
-    public async Task<ActionResult> DeleteProduct(string id)
+    public async Task<ActionResult> DeleteProduct(string id, CancellationToken cancellationToken)
     {
-        DeleteResult result = await _catalogContext.Products
-            .DeleteOneAsync(filter: product => product.Id == id);
+        DeleteResult result = await _catalogContext.Products.DeleteOneAsync(
+            filter: product => product.Id == id,
+            cancellationToken: cancellationToken);
 
         if (result.IsAcknowledged && result.DeletedCount > 0)
         {
