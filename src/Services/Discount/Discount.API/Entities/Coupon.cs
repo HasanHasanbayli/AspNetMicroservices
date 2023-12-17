@@ -4,8 +4,8 @@ namespace Discount.API.Entities;
 
 public class Coupon
 {
-    public Guid Id { get; init; }
+    public int Id { get; init; }
     [MaxLength(24)] public string ProductName { get; set; } = default!;
     [MaxLength(4000)] public string Description { get; set; } = default!;
-    public decimal Amount { get; set; }
+    public double Amount { get; set; }
 }

@@ -1,12 +1,14 @@
-using Discount.API.Context;
+using Discount.Grpc.Context;
+using Discount.Grpc.Services;
 using Microsoft.EntityFrameworkCore;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddControllers();
-builder.Services.AddSwaggerGen();
+// Additional configuration is required to successfully run gRPC on macOS.
+// For instructions on how to configure Kestrel and gRPC clients on macOS, visit https://go.microsoft.com/fwlink/?linkid=2099682
 
+// Add services to the container.
+builder.Services.AddGrpc();
 builder.Services.AddDbContext<DiscountContext>(optionsBuilder =>
 {
     optionsBuilder.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
@@ -26,20 +28,13 @@ catch
 }
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+
+app.MapGrpcService<DiscountService>();
+
+app.MapGet("/", () =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "Discount.API V1");
-        options.RoutePrefix = string.Empty;
-    });
-}
-
-app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
-app.MapControllers();
+    _ = "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, " +
+        "visit: https://go.microsoft.com/fwlink/?linkid=2086909";
+});
 
 app.Run();
