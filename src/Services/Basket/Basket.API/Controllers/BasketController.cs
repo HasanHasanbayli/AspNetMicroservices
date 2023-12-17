@@ -1,5 +1,7 @@
 using System.Text.Json;
 using Basket.API.Entities;
+using Basket.API.GrpcServices;
+using Discount.Grpc.Protos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 
@@ -10,10 +12,12 @@ namespace Basket.API.Controllers;
 public class BasketController : ControllerBase
 {
     private readonly IDistributedCache _distributedCache;
+    private readonly DiscountGrpcService _discountGrpcService;
 
-    public BasketController(IDistributedCache distributedCache)
+    public BasketController(IDistributedCache distributedCache, DiscountGrpcService discountGrpcService)
     {
         _distributedCache = distributedCache;
+        _discountGrpcService = discountGrpcService;
     }
 
     [HttpGet(template: "{userName}")]
@@ -29,8 +33,16 @@ public class BasketController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Post([FromBody] ShoppingCart basket, CancellationToken cancellationToken)
     {
-        await _distributedCache.SetStringAsync(key: basket.Username,
-            value: JsonSerializer.Serialize(basket), token: cancellationToken);
+        foreach (ShoppingCartItem shoppingCartItem in basket.Items)
+        {
+            GetDiscountResponse coupon = await _discountGrpcService.GetDiscount(shoppingCartItem.ProductName);
+            shoppingCartItem.Price -= (decimal) coupon.Amount;
+        }
+
+        await _distributedCache.SetStringAsync(
+            key: basket.Username,
+            value: JsonSerializer.Serialize(basket),
+            token: cancellationToken);
 
         return Ok();
     }

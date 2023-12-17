@@ -18,8 +18,7 @@ public class DiscountService : DiscountProtoService.DiscountProtoServiceBase
     public override async Task<GetDiscountResponse> GetDiscount(GetDiscountRequest request, ServerCallContext context)
     {
         Coupon? dbCoupon = await _discountContext.Coupons
-            .Include(navigationPropertyPath: coupon => coupon.Id)
-            .FirstOrDefaultAsync(predicate: coupon => coupon.ProductName == request.ProductName);
+            .FirstOrDefaultAsync(coupon => coupon.ProductName == request.ProductName);
 
         if (dbCoupon is null)
         {
